@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model vocabulary {
+  ID         Int    @id @default(autoincrement())
+  KEY        String @db.VarChar(512)
+  TITLE      String @db.VarChar(512)
+  TITLE_LIST String @db.VarChar(512)
+  TITLE_ADD  String @default("Сущность") @db.VarChar(512)
+}
+
+model expense {
+  ID               Int           @id @default(autoincrement())
+  IS_ACTIVE        Boolean       @default(true)
+  DATA             DateTime      @default(dbgenerated("(curdate())")) @db.DateTime(0)
+  COST             Int
+  SALES_RECEIPT    String?       @db.VarChar(512)
+  STAFF_ID         Int
+  TYPE_EXPENSES_ID Int
+  staff            staff         @relation(fields: [STAFF_ID], references: [ID], onDelete: NoAction, onUpdate: NoAction, map: "expense_ibfk_1")
+  type_expenses    type_expenses @relation(fields: [TYPE_EXPENSES_ID], references: [ID], onDelete: NoAction, onUpdate: NoAction, map: "expense_ibfk_2")
+
+  @@index([STAFF_ID], map: "STAFF_ID")
+  @@index([TYPE_EXPENSES_ID], map: "TYPE_EXPENSES_ID")
+}
+
+model staff {
+  ID          Int           @id @default(autoincrement())
+  SURNAME     String        @db.VarChar(512)
+  IS_ACTIVE   Boolean       @default(true)
+  NAME        String        @db.VarChar(512)
+  FATHER_NAME String?       @db.VarChar(512)
+  EMAIL       String        @unique(map: "EMAIL_UNIQUE") @db.VarChar(256)
+  PASSWORD    String        @db.VarChar(512)
+  IS_ADMIN    Boolean       @default(false)
+  expense     expense[]
+  staff_group staff_group[]
+}
+
+model staff_group {
+  ID         Int        @id @default(autoincrement())
+  IS_ACTIVE  Boolean    @default(true)
+  STAFF_ID   Int
+  GROUP_ID   Int
+  staff      staff      @relation(fields: [STAFF_ID], references: [ID], onDelete: NoAction, onUpdate: NoAction, map: "staff_group_ibfk_1")
+  work_group work_group @relation(fields: [GROUP_ID], references: [ID], onDelete: NoAction, onUpdate: NoAction, map: "staff_group_ibfk_2")
+
+  @@index([GROUP_ID], map: "GROUP_ID")
+  @@index([STAFF_ID], map: "STAFF_ID")
+}
+
+model time_period {
+  ID                            Int                             @id @default(autoincrement())
+  IS_ACTIVE                     Boolean                         @default(true)
+  DATE_BEGIN                    DateTime                        @db.DateTime(0)
+  DATE_END                      DateTime?                       @db.DateTime(0)
+  type_expenses_and_time_period type_expenses_and_time_period[]
+}
+
+model type_expenses {
+  ID                            Int                             @id @default(autoincrement())
+  IS_ACTIVE                     Boolean                         @default(true)
+  NAME                          String                          @db.VarChar(512)
+  DESCRIPTION                   String?                         @db.VarChar(1024)
+  expense                       expense[]
+  type_expenses_and_time_period type_expenses_and_time_period[]
+}
+
+model type_expenses_and_time_period {
+  ID               Int           @id @default(autoincrement())
+  IS_ACTIVE        Boolean       @default(true)
+  MARGINAL_COST    Int
+  TIME_PERIOD_ID   Int
+  TYPE_EXPENSES_ID Int
+  time_period      time_period   @relation(fields: [TIME_PERIOD_ID], references: [ID], onDelete: NoAction, onUpdate: NoAction, map: "type_expenses_and_time_period_ibfk_1")
+  type_expenses    type_expenses @relation(fields: [TYPE_EXPENSES_ID], references: [ID], onDelete: NoAction, onUpdate: NoAction, map: "type_expenses_and_time_period_ibfk_2")
+
+  @@index([TIME_PERIOD_ID], map: "TIME_PERIOD_ID")
+  @@index([TYPE_EXPENSES_ID], map: "TYPE_EXPENSES_ID")
+}
+
+model work_group {
+  IS_ACTIVE   Boolean       @default(true)
+  ID          Int           @id @default(autoincrement())
+  NAME        String        @db.VarChar(512)
+  staff_group staff_group[]
+}
