@@ -12,7 +12,8 @@ export const authStaff = asyncHandler(async (req, res) => {
 
 	const staff = await prisma.staff.findUnique({
 		where: {
-			EMAIL: email
+			EMAIL: email,
+			IS_ACTIVE: true
 		},
 		select: {
 			ID: true,
@@ -22,14 +23,14 @@ export const authStaff = asyncHandler(async (req, res) => {
 
 	if (!staff) {
 		res.status(401)
-		throw new Error('Email is not correct')
+		throw new Error('Пользователя с данным почтой не существует')
 	}
 
 	const isValidPassword = await verify(staff.PASSWORD, password)
 
 	if (!isValidPassword) {
 		res.status(401)
-		throw new Error('Password is not correct')
+		throw new Error('Неправильный пароль')
 	}
 
 	res.json({ staff, token: generateToken(staff.ID) })

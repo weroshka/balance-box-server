@@ -75,15 +75,25 @@ export const addDataTable = asyncHandler(async (req, res) => {
 		})
 	})
 
-	console.log(params)
-
 	if (prisma[table]) {
-		const data = await prisma[table].create({
-			data: params
-		})
-		if (data) res.json(data)
-		else res.json(false)
-	} else res.json(false)
+		try {
+			const data = await prisma[table].create({
+				data: params
+			})
+			if (!data) {
+				res.status(404)
+				throw new Error(
+					'Введенных данных есть одна из этих ошибок - неверный формат даты (должен быть гггг-мм-дд), дублирующаяся строка или же другие технические причины. Свяжитесь с поддержкой'
+				)
+			}
+			res.json(data)
+		} catch (error) {
+			res.status(404)
+			throw new Error(error)
+		}
+	}
+	res.status(404)
+	throw new Error('Данной сущности нет в базе данных')
 })
 
 // @desc Update all data of table
@@ -109,8 +119,6 @@ export const updateDataTable = asyncHandler(async (req, res) => {
 			if (key.includes(nS)) params[key] = +params[key]
 		})
 	})
-
-	console.log(params)
 
 	if (prisma[table]) {
 		const data = await prisma[table].update({

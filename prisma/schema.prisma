@@ -8,11 +8,12 @@ datasource db {
 }
 
 model vocabulary {
-  ID         Int    @id @default(autoincrement())
-  KEY        String @db.VarChar(512)
-  TITLE      String @db.VarChar(512)
-  TITLE_LIST String @db.VarChar(512)
-  TITLE_ADD  String @default("Сущность") @db.VarChar(512)
+  IS_ACTIVE  Boolean @default(true)
+  ID         Int     @id @default(autoincrement())
+  KEY        String  @db.VarChar(512)
+  TITLE      String  @db.VarChar(512)
+  TITLE_LIST String  @db.VarChar(512)
+  TITLE_ADD  String  @default("Сущность") @db.VarChar(512)
 }
 
 model expense {
@@ -22,9 +23,12 @@ model expense {
   COST             Int
   SALES_RECEIPT    String?       @db.VarChar(512)
   STAFF_ID         Int
+  GROUP_ID         Int
   TYPE_EXPENSES_ID Int
   staff            staff         @relation(fields: [STAFF_ID], references: [ID], onDelete: NoAction, onUpdate: NoAction, map: "expense_ibfk_1")
   type_expenses    type_expenses @relation(fields: [TYPE_EXPENSES_ID], references: [ID], onDelete: NoAction, onUpdate: NoAction, map: "expense_ibfk_2")
+
+  group work_group @relation(fields: [GROUP_ID], references: [ID], onDelete: NoAction, onUpdate: NoAction, map: "expense_ibfk_3")
 
   @@index([STAFF_ID], map: "STAFF_ID")
   @@index([TYPE_EXPENSES_ID], map: "TYPE_EXPENSES_ID")
@@ -90,4 +94,5 @@ model work_group {
   ID          Int           @id @default(autoincrement())
   NAME        String        @db.VarChar(512)
   staff_group staff_group[]
+  expense     expense[]
 }

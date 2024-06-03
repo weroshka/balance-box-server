@@ -25,7 +25,8 @@ export const getAllExpense = asyncHandler(async (req, res) => {
 					EMAIL: true
 				}
 			},
-			type_expenses: true
+			type_expenses: true,
+			group: true
 		}
 	})
 	if (!expenseAll) {
@@ -66,7 +67,8 @@ export const getCurrentStaffExpense = asyncHandler(async (req, res) => {
 					EMAIL: true
 				}
 			},
-			type_expenses: true
+			type_expenses: true,
+			group: true
 		}
 	})
 	if (!expense) {
@@ -101,7 +103,8 @@ export const getExpense = asyncHandler(async (req, res) => {
 					EMAIL: true
 				}
 			},
-			type_expenses: true
+			type_expenses: true,
+			group: true
 		}
 	})
 	if (!expense) {
@@ -116,14 +119,18 @@ export const getExpense = asyncHandler(async (req, res) => {
 // @access Admin
 
 export const addExpense = asyncHandler(async (req, res) => {
-	const { date, cost, staffId, typeExpenseId } = req.body
-	console.log(staffId)
+	const { date, cost, groupId, staffId, typeExpenseId } = req.body
 	try {
 		const expense = await prisma.expense.create({
 			data: {
 				DATA: parseDate(date),
 				COST: +cost,
 				SALES_RECEIPT: `${process.env.URL}:${process.env.PORT}/uploads/${req.file.filename}`,
+				group: {
+					connect: {
+						ID: +groupId
+					}
+				},
 				staff: {
 					connect: {
 						ID: +staffId
@@ -149,7 +156,8 @@ export const addExpense = asyncHandler(async (req, res) => {
 						EMAIL: true
 					}
 				},
-				type_expenses: true
+				type_expenses: true,
+				group: true
 			}
 		})
 		if (!expense) throw new Error('Expense not created')
